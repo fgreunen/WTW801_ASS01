@@ -3,6 +3,7 @@ import os
 import pandas as pd
 import datetime
 import numpy as np
+from scipy import stats
 
 class Prices:
     RISK_FREE_RATE = 0.0
@@ -15,9 +16,23 @@ class Prices:
         self.filename = os.path.join(datadir, 
             self.tickername + '-' + self.start.strftime("%Y_%m_%d") + '-' + self.end.strftime("%Y_%m_%d") + '.pkl')
         self._populatePrices()
+
+    def hasEnoughData(self):
+        return self.data.shape[0] > (self.TRADING_DAYS_PER_YEAR * 5 + 1)
+
+    def getDataForCovarianceCalculation(self):
+        return self.data.tail(int(self.TRADING_DAYS_PER_YEAR * 5)).pct_change_1D
     
     def getPricesResampledMonthly(self):
         return self.data.resample('M').agg(lambda x: x[-1])
+
+    def getPricesResampledYearly(self):
+        return self.data.resample('Y').agg(lambda x: x[-1])
+
+    def getAnnualMeanReturnAndVolatility(self):
+        stDevOfReturnsAnnualized = self.distributionOfDailyReturns[1] * np.sqrt(self.TRADING_DAYS_PER_YEAR)
+        returns = np.asarray(self.getPricesResampledYearly().adj_close.pct_change(1).dropna())
+        return (returns.mean(), stDevOfReturnsAnnualized)
 
     def _populatePrices(self):
         self.data = None
@@ -49,7 +64,6 @@ class Prices:
         self.data = data
         self.sharpeRatio = np.sqrt(self.TRADING_DAYS_PER_YEAR) * data['excess_daily_ret'].mean() / data['excess_daily_ret'].std()
         self.distributionOfDailyReturns = (data.pct_change_1D.mean(), data.pct_change_1D.std())
-
 
     def getPrices(self):
         return self.data
