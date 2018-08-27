@@ -21,7 +21,12 @@ class Prices:
         return self.data.shape[0] > (self.TRADING_DAYS_PER_YEAR * 5 + 1)
 
     def getDataForCovarianceCalculation(self):
-        return self.data.tail(int(self.TRADING_DAYS_PER_YEAR * 5)).pct_change_1D
+        data = self.data.tail(int(self.TRADING_DAYS_PER_YEAR * 5)).resample('M').agg(lambda x: x[-1])
+        data = data.adj_close.pct_change(1)
+        data = data.fillna(value = 0)
+        return data
+
+        # return self.data.tail(int(self.TRADING_DAYS_PER_YEAR * 5)).pct_change_1D
     
     def getPricesResampledMonthly(self):
         return self.data.resample('M').agg(lambda x: x[-1])

@@ -11,5 +11,5 @@ class Universe:
         return [str(x[0])[5:] for x in self._universe]
 
     def getLocalUniverse(self):
-        files = [x.split('-')[0] for x in sorted(os.listdir(self.DATA_DIR)) if x.endswith(".pkl")]
+        files = [x.split('-')[0] for x in os.listdir(self.DATA_DIR) if x.endswith(".pkl")]
         return list(set(files))
