@@ -51,6 +51,7 @@ class Prices:
         data = data.iloc[::-1] # reverse
         data['pct_change_1D'] = data.adj_close.pct_change(1)
         data['pct_change_1M'] = data.adj_close.pct_change(21)
+        data['pct_change_1W'] = data.adj_close.pct_change(5)
         data = data.dropna()
         data['date'] = pd.DatetimeIndex(pd.to_datetime(data['date'], format='%Y-%m-%d'))
         data['excess_daily_ret'] = data['pct_change_1D'] - self.RISK_FREE_RATE/self.TRADING_DAYS_PER_YEAR
