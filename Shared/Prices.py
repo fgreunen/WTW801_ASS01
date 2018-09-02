@@ -3,7 +3,6 @@ import os
 import pandas as pd
 import datetime
 import numpy as np
-from scipy import stats
 
 class Prices:
     RISK_FREE_RATE = 0.0
@@ -18,10 +17,10 @@ class Prices:
         self._populatePrices()
 
     def hasEnoughData(self):
-        return self.data.shape[0] > (self.TRADING_DAYS_PER_YEAR * 5 + 1)
+        return self.data.shape[0] > (self.TRADING_DAYS_PER_YEAR * 6 + 1)
 
     def getDataForCovarianceCalculation(self):
-        data = self.data.tail(int(self.TRADING_DAYS_PER_YEAR * 5)).resample('M').agg(lambda x: x[-1])
+        data = self.data.tail(int(self.TRADING_DAYS_PER_YEAR * 6)).resample('M').agg(lambda x: x[-1])
         data = data.adj_close.pct_change(1)
         data = data.fillna(value = 0)
         return data

@@ -1,5 +1,4 @@
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 from Shared import Prices
 
 # https://towardsdatascience.com/efficient-frontier-portfolio-optimisation-in-python-e7844051e7f
