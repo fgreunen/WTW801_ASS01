@@ -19,6 +19,9 @@ class Prices:
     def hasEnoughData(self):
         return self.data.shape[0] > (self.TRADING_DAYS_PER_YEAR * 6 + 1)
 
+    def isFromStart(self):
+        return self.getPrices().index[0] <= datetime.datetime(2010, 2, 3) and self.getPrices().index[len(self.getPrices()) - 1] >= datetime.datetime(2017, 12, 25)
+        
     def getDataForCovarianceCalculation(self):
         data = self.data.tail(int(self.TRADING_DAYS_PER_YEAR * 6)).resample('M').agg(lambda x: x[-1])
         data = data.adj_close.pct_change(1)

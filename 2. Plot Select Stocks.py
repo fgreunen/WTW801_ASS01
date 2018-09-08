@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from Shared import Prices
+from Shared import Prices, Universe
 from datetime import timedelta
 from prettytable import PrettyTable
 import pandas as pd
@@ -8,7 +8,11 @@ import numpy as np
 import cvxopt as opt
 from cvxopt import solvers
 
-stockUniverse = ['JPM', 'JNJ', 'XOM', 'V', 'BAC', 'WMT', 'WFC', 'UNH', 'PFE', 'MA']
+fixedstockuniverse = stockUniverse = ['JPM', 'JNJ', 'XOM', 'V', 'BAC', 'WMT', 'WFC', 'UNH', 'PFE', 'MA']
+#stockUniverse = sorted(Universe.Universe().getLocalUniverse())[:1000]
+prices = [Prices.Prices(tickername) for tickername in stockUniverse]
+prices = [x for x in prices if x.isFromStart()]
+print(len(prices))
 
 def plotAdjustedClose(tickername, name, p1 = 350, p2 = 240, p3 = 10, p4 = 14, 
                       p5 = 280, p6 = 8, p7 = 400, p8 = 8):
@@ -33,7 +37,6 @@ def plotAdjustedClose(tickername, name, p1 = 350, p2 = 240, p3 = 10, p4 = 14,
     plt.show()
     
 def plotTotalReturns():
-    prices = [Prices.Prices(tickername) for tickername in stockUniverse]
     totalReturnsOverEntirePeriod = [(x.tickername, x.getPrices()) for x in prices]
     totalReturnsOverEntirePeriod = [(x[0], x[1]['adj_close'][len(x[1].index) - 1] / x[1]['adj_close'][0]) for x in totalReturnsOverEntirePeriod]
 
@@ -46,7 +49,6 @@ def plotTotalReturns():
     plt.show()
     
 def getYearlyRateOfReturns():
-    prices = [Prices.Prices(tickername) for tickername in stockUniverse]
     yearlyRateOfReturns = [(x.tickername, x.getYearlyRateOfReturns()) for x in prices]
     headers = ['Year']
     headers.extend([x[0] for x in yearlyRateOfReturns])
@@ -121,15 +123,13 @@ def getFrontierPortfolios(df, perturbReturns = False):
         optimalPortfoliosExplodedWeights.append(newRow)
         
     columns = ['ExpectedReturn', 'Variance']
-    columns.extend([x for x in stockUniverse])
-    optimalPortfoliosDf = pd.DataFrame(data = optimalPortfoliosExplodedWeights, columns = columns)
-    optimalPortfoliosDf = optimalPortfoliosDf.set_index('Variance')   
-    
+    columns.extend([x for x in df.loc[:, df.columns != 'ExpectedReturn'].columns.values.tolist()])
+    optimalPortfoliosDf = pd.DataFrame(data = optimalPortfoliosExplodedWeights, columns = columns) 
     return optimalPortfoliosDf
 
 def plotFrontierPortfolios(frontierPortfolios):
-    frontierPortfolios.plot(y='ExpectedReturn', legend=None, color='#333333')   
-    plt.plot(frontierPortfolios.index, frontierPortfolios['ExpectedReturn'], 'o', markersize = 5, color='g')
+    frontierPortfolios.plot(y='ExpectedReturn',x = 'Variance', legend=None, color='#333333')   
+    plt.plot(frontierPortfolios['Variance'], frontierPortfolios['ExpectedReturn'], 'o', markersize = 5, color='g')
     plt.title(f'Volatility versus Expected Return \nof portfolios along the efficient frontier')
     plt.ylabel('Expected Return (%)')
     plt.xlabel('Standard Deviation (%)')
@@ -138,50 +138,48 @@ def plotFrontierPortfolios(frontierPortfolios):
     
 def printFrontierPortfolios(frontierPortfolios):
     headers = frontierPortfolios.columns.values.tolist()
-    headers.insert(0, 'Variance')
     t = PrettyTable(headers)
-    for index, row in frontierPortfolios.iterrows():
-        toPrint = [f'{index:05.2f}%']
+    for i in range(len(frontierPortfolios)):
+        toPrint = []
         for column in frontierPortfolios: 
-            toPrint.append(f'{frontierPortfolios[column][index]:05.2f}%')
+            toPrint.append(f'{frontierPortfolios[column][i]:05.2f}%')
         t.add_row(toPrint)
     
-    meanWeights = [f'{x:05.2f}%' for x in frontierPortfolios.loc[:, frontierPortfolios.columns != 'ExpectedReturn'].mean(axis=0).values.tolist()]
+    
+    meanWeights = [f'{x:05.2f}%' for x in frontierPortfolios.loc[:, ~frontierPortfolios.columns.isin(['ExpectedReturn', 'Variance'])].mean(axis=0).values.tolist()]
     meanWeights.insert(0, 'Mean')
     meanWeights.insert(0, '')
     t.add_row(meanWeights)
     
-    sdWeights = [f'{x:05.2f}%' for x in frontierPortfolios.loc[:, frontierPortfolios.columns != 'ExpectedReturn'].std(axis=0).values.tolist()]
+    sdWeights = [f'{x:05.2f}%' for x in frontierPortfolios.loc[:, ~frontierPortfolios.columns.isin(['ExpectedReturn', 'Variance'])].std(axis=0).values.tolist()]
     sdWeights.insert(0, 'SD')
     sdWeights.insert(0, '')
     t.add_row(sdWeights)
     print(t)
 
 if __name__ == '__main__':
-    plotAdjustedClose(stockUniverse[0], 'JP Morgan')
-    plotAdjustedClose(stockUniverse[1], 'Johnson & Johnson')
-    plotAdjustedClose(stockUniverse[2], 'Exxon Mobile Corporation', p3 = 7, p4 = 10, p5 = 312, p6 = 6, p8 = 7)
-    plotAdjustedClose(stockUniverse[3], 'Visa Inc.', p4 = 18)
-    plotAdjustedClose(stockUniverse[4], 'Bank of America Corporation', p3 = 1, p4 = 7, p6 = 5, p8 = 2)
-    plotAdjustedClose(stockUniverse[5], 'Walmart Inc.', p4 = 18)
-    plotAdjustedClose(stockUniverse[6], 'Wells Fargo & Company', p4 = 18)
-    plotAdjustedClose(stockUniverse[7], 'UnitedHealth Group Incorporated', p4 = 27, p6 = 15, p8 = 15)
-    plotAdjustedClose(stockUniverse[8], 'Pfizer, Inc.', p3 = 1.5, p4 = 5, p6 = 2.5, p8 = 2.5)
-    plotAdjustedClose(stockUniverse[9], 'Mastercard Incorporated', p4 = 22, p6 = 10, p8 = 10)
-       
+#    plotAdjustedClose(fixedstockuniverse[0], 'JP Morgan')
+#    plotAdjustedClose(fixedstockuniverse[1], 'Johnson & Johnson')
+#    plotAdjustedClose(fixedstockuniverse[2], 'Exxon Mobile Corporation', p3 = 7, p4 = 10, p5 = 312, p6 = 6, p8 = 7)
+#    plotAdjustedClose(fixedstockuniverse[3], 'Visa Inc.', p4 = 18)
+#    plotAdjustedClose(fixedstockuniverse[4], 'Bank of America Corporation', p3 = 1, p4 = 7, p6 = 5, p8 = 2)
+#    plotAdjustedClose(fixedstockuniverse[5], 'Walmart Inc.', p4 = 18)
+#    plotAdjustedClose(fixedstockuniverse[6], 'Wells Fargo & Company', p4 = 18)
+#    plotAdjustedClose(fixedstockuniverse[7], 'UnitedHealth Group Incorporated', p4 = 27, p6 = 15, p8 = 15)
+#    plotAdjustedClose(fixedstockuniverse[8], 'Pfizer, Inc.', p3 = 1.5, p4 = 5, p6 = 2.5, p8 = 2.5)
+#    plotAdjustedClose(fixedstockuniverse[9], 'Mastercard Incorporated', p4 = 22, p6 = 10, p8 = 10)
+
     plotTotalReturns()
     df = getYearlyRateOfReturns()
     printYearlyReturnsTable(df)
-    
+   
     frontierPortfolios = getFrontierPortfolios(df)
     printFrontierPortfolios(frontierPortfolios)
     plotFrontierPortfolios(frontierPortfolios)
-    
-    perturbations = []
-    frontierPortfolios = getFrontierPortfolios(df, True)
-    frontierPortfolios = getFrontierPortfolios(df, True)
-    frontierPortfolios = getFrontierPortfolios(df, True)
+   
+#    perturbations = []
+#    frontierPortfolios = getFrontierPortfolios(df, True)
+#    frontierPortfolios = getFrontierPortfolios(df, True)
+#    frontierPortfolios = getFrontierPortfolios(df, True)
 
   
-    
-    
