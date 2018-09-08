@@ -8,130 +8,35 @@ import numpy as np
 import cvxopt as opt
 from cvxopt import solvers
 
-if __name__ == '__main__':
-    totalReturnsOverEntirePeriod = []
-    yearlyRateOfReturns = []
-    
-    tickername = 'JPM'
-    prices = Prices.Prices(tickername)
-    yearlyRateOfReturns.append((tickername, prices.getYearlyRateOfReturns()))
-    prices = prices.getPrices()
-    first = prices.index[0]
-    last = prices.index[len(prices.index) - 1]
-    totalReturnsOverEntirePeriod.append((tickername, prices['adj_close'][len(prices.index) - 1] / prices['adj_close'][0]))
-    xPlotMin = min(prices.index) - timedelta(days=350)
-    xPlotMax = max(prices.index) + timedelta(days=240)
-    prices.plot(y='adj_close', legend=None, color='#333333')
-    plt.title(f'Close Price (Adjusted) for \nJP Morgan ({tickername})')
-    plt.ylabel('Stock Price')
-    plt.xlabel('Date')
-    plt.xticks(rotation=90)
-    plt.ylim(min(prices['adj_close']) - 10, max(prices['adj_close']) + 14)
-    plt.xlim(xPlotMin, xPlotMax)
-    plt.annotate(first.date(), [first - timedelta(days=280), prices['adj_close'][0] + 8])
-    plt.annotate(last.date(), [last - timedelta(days=400), prices['adj_close'][len(prices.index) - 1] + 8])
-    plt.plot(first.date(), prices['adj_close'][0], 'o', markersize = 10, color='b')
-    plt.plot(last.date(), prices['adj_close'][len(prices.index) - 1], 'o', markersize = 10, color='g')
-    plt.hlines(y=prices['adj_close'][0], xmin = xPlotMin, xmax = first.date(), color='b', linestyle='--')
-    plt.hlines(y=prices['adj_close'][len(prices.index) - 1], xmin = xPlotMin, xmax = last.date(), color='g', linestyle='--')
-    plt.show()
+stockUniverse = ['JPM', 'JNJ', 'XOM', 'V', 'BAC', 'WMT', 'WFC', 'UNH', 'PFE', 'MA']
 
-    tickername = 'JNJ'
-    prices = Prices.Prices(tickername)
-    yearlyRateOfReturns.append((tickername, prices.getYearlyRateOfReturns()))
-    prices = prices.getPrices()
+def plotAdjustedClose(tickername, name, p1 = 350, p2 = 240, p3 = 10, p4 = 14, 
+                      p5 = 280, p6 = 8, p7 = 400, p8 = 8):
+    prices = Prices.Prices(tickername).getPrices()
     first = prices.index[0]
     last = prices.index[len(prices.index) - 1]
-    totalReturnsOverEntirePeriod.append((tickername, prices['adj_close'][len(prices.index) - 1] / prices['adj_close'][0]))
-    xPlotMin = min(prices.index) - timedelta(days=350)
-    xPlotMax = max(prices.index) + timedelta(days=240)
+    xPlotMin = min(prices.index) - timedelta(days=p1)
+    xPlotMax = max(prices.index) + timedelta(days=p2)
     prices.plot(y='adj_close', legend=None, color='#333333')
-    plt.title(f'Close Price (Adjusted) for \nJohnson & Johnson ({tickername})')
+    plt.title(f'Close Price (Adjusted) for \n{name} ({tickername})')
     plt.ylabel('Stock Price')
     plt.xlabel('Date')
     plt.xticks(rotation=90)
-    plt.ylim(min(prices['adj_close']) - 10, max(prices['adj_close']) + 14)
+    plt.ylim(min(prices['adj_close']) - p3, max(prices['adj_close']) + p4)
     plt.xlim(xPlotMin, xPlotMax)
-    plt.annotate(first.date(), [first - timedelta(days=280), prices['adj_close'][0] + 8])
-    plt.annotate(last.date(), [last - timedelta(days=400), prices['adj_close'][len(prices.index) - 1] + 8])
+    plt.annotate(first.date(), [first - timedelta(days=p5), prices['adj_close'][0] + p6])
+    plt.annotate(last.date(), [last - timedelta(days=p7), prices['adj_close'][len(prices.index) - 1] + p8])
     plt.plot(first.date(), prices['adj_close'][0], 'o', markersize = 10, color='b')
     plt.plot(last.date(), prices['adj_close'][len(prices.index) - 1], 'o', markersize = 10, color='g')
     plt.hlines(y=prices['adj_close'][0], xmin = xPlotMin, xmax = first.date(), color='b', linestyle='--')
     plt.hlines(y=prices['adj_close'][len(prices.index) - 1], xmin = xPlotMin, xmax = last.date(), color='g', linestyle='--')
     plt.show()
     
-    tickername = 'XOM'
-    prices = Prices.Prices(tickername)
-    yearlyRateOfReturns.append((tickername, prices.getYearlyRateOfReturns()))
-    prices = prices.getPrices()
-    first = prices.index[0]
-    last = prices.index[len(prices.index) - 1]
-    totalReturnsOverEntirePeriod.append((tickername, prices['adj_close'][len(prices.index) - 1] / prices['adj_close'][0]))
-    xPlotMin = min(prices.index) - timedelta(days=350)
-    xPlotMax = max(prices.index) + timedelta(days=240)
-    prices.plot(y='adj_close', legend=None, color='#333333')
-    plt.title(f'Close Price (Adjusted) for \nExxon Mobile Corporation ({tickername})')
-    plt.ylabel('Stock Price')
-    plt.xlabel('Date')
-    plt.xticks(rotation=90)
-    plt.ylim(min(prices['adj_close']) - 7, max(prices['adj_close']) + 10)
-    plt.xlim(xPlotMin, xPlotMax)
-    plt.annotate(first.date(), [first - timedelta(days=312), prices['adj_close'][0] + 6])
-    plt.annotate(last.date(), [last - timedelta(days=400), prices['adj_close'][len(prices.index) - 1] + 7])
-    plt.plot(first.date(), prices['adj_close'][0], 'o', markersize = 10, color='b')
-    plt.plot(last.date(), prices['adj_close'][len(prices.index) - 1], 'o', markersize = 10, color='g')
-    plt.hlines(y=prices['adj_close'][0], xmin = xPlotMin, xmax = first.date(), color='b', linestyle='--')
-    plt.hlines(y=prices['adj_close'][len(prices.index) - 1], xmin = xPlotMin, xmax = last.date(), color='g', linestyle='--')
-    plt.show()
-    
-    tickername = 'V'
-    prices = Prices.Prices(tickername)
-    yearlyRateOfReturns.append((tickername, prices.getYearlyRateOfReturns()))
-    prices = prices.getPrices()
-    first = prices.index[0]
-    last = prices.index[len(prices.index) - 1]
-    totalReturnsOverEntirePeriod.append((tickername, prices['adj_close'][len(prices.index) - 1] / prices['adj_close'][0]))
-    xPlotMin = min(prices.index) - timedelta(days=350)
-    xPlotMax = max(prices.index) + timedelta(days=240)
-    prices.plot(y='adj_close', legend=None, color='#333333')
-    plt.title(f'Close Price (Adjusted) for \nVisa Inc. ({tickername})')
-    plt.ylabel('Stock Price')
-    plt.xlabel('Date')
-    plt.xticks(rotation=90)
-    plt.ylim(min(prices['adj_close']) - 10, max(prices['adj_close']) + 18)
-    plt.xlim(xPlotMin, xPlotMax)
-    plt.annotate(first.date(), [first - timedelta(days=280), prices['adj_close'][0] + 8])
-    plt.annotate(last.date(), [last - timedelta(days=400), prices['adj_close'][len(prices.index) - 1] + 8])
-    plt.plot(first.date(), prices['adj_close'][0], 'o', markersize = 10, color='b')
-    plt.plot(last.date(), prices['adj_close'][len(prices.index) - 1], 'o', markersize = 10, color='g')
-    plt.hlines(y=prices['adj_close'][0], xmin = xPlotMin, xmax = first.date(), color='b', linestyle='--')
-    plt.hlines(y=prices['adj_close'][len(prices.index) - 1], xmin = xPlotMin, xmax = last.date(), color='g', linestyle='--')
-    plt.show()
-    
-    tickername = 'BAC'
-    prices = Prices.Prices(tickername)
-    yearlyRateOfReturns.append((tickername, prices.getYearlyRateOfReturns()))
-    prices = prices.getPrices()
-    first = prices.index[0]
-    last = prices.index[len(prices.index) - 1]
-    totalReturnsOverEntirePeriod.append((tickername, prices['adj_close'][len(prices.index) - 1] / prices['adj_close'][0]))
-    xPlotMin = min(prices.index) - timedelta(days=350)
-    xPlotMax = max(prices.index) + timedelta(days=240)
-    prices.plot(y='adj_close', legend=None, color='#333333')
-    plt.title(f'Close Price (Adjusted) for \nBank of America Corporation ({tickername})')
-    plt.ylabel('Stock Price')
-    plt.xlabel('Date')
-    plt.xticks(rotation=90)
-    plt.ylim(min(prices['adj_close']) - 1, max(prices['adj_close']) + 7)
-    plt.xlim(xPlotMin, xPlotMax)
-    plt.annotate(first.date(), [first - timedelta(days=280), prices['adj_close'][0] + 5])
-    plt.annotate(last.date(), [last - timedelta(days=400), prices['adj_close'][len(prices.index) - 1] + 2])
-    plt.plot(first.date(), prices['adj_close'][0], 'o', markersize = 10, color='b')
-    plt.plot(last.date(), prices['adj_close'][len(prices.index) - 1], 'o', markersize = 10, color='g')
-    plt.hlines(y=prices['adj_close'][0], xmin = xPlotMin, xmax = first.date(), color='b', linestyle='--')
-    plt.hlines(y=prices['adj_close'][len(prices.index) - 1], xmin = xPlotMin, xmax = last.date(), color='g', linestyle='--')
-    plt.show()
-    
+def plotTotalReturns():
+    prices = [Prices.Prices(tickername) for tickername in stockUniverse]
+    totalReturnsOverEntirePeriod = [(x.tickername, x.getPrices()) for x in prices]
+    totalReturnsOverEntirePeriod = [(x[0], x[1]['adj_close'][len(x[1].index) - 1] / x[1]['adj_close'][0]) for x in totalReturnsOverEntirePeriod]
+
     names = [t[0] for t in totalReturnsOverEntirePeriod]
     values = [t[1] for t in totalReturnsOverEntirePeriod]
     plt.bar(names, values, color='#333333')
@@ -140,27 +45,33 @@ if __name__ == '__main__':
     plt.xlabel('Asset')
     plt.show()
     
+def getYearlyRateOfReturns():
+    prices = [Prices.Prices(tickername) for tickername in stockUniverse]
+    yearlyRateOfReturns = [(x.tickername, x.getYearlyRateOfReturns()) for x in prices]
     headers = ['Year']
     headers.extend([x[0] for x in yearlyRateOfReturns])
     iterate = [x[1] for x in yearlyRateOfReturns]
     stocks = len(iterate)
     rows = []
-    strRows = []
     for j in range(len(iterate[0])):
         row = [iterate[0][j][1]]
-        strRow = [iterate[0][j][1]]
         for i in range(stocks):
             row.append(iterate[i][j][0])
-            strRow.append(f'{100 * iterate[i][j][0]:05.2f}%')
         rows.append(row)
-        strRows.append(strRow)
-        
     df = pd.DataFrame(data = rows, columns = headers)
     df.set_index('Year', inplace=True)
+    return df
+
+def printYearlyReturnsTable(df):
+    headers = ['Year']
+    headers.extend(df.columns.values.tolist())
     
     t = PrettyTable(headers)
-    for i in range(len(strRows)):
-        t.add_row(strRows[i])
+    for index, row in df.iterrows():
+        toPrint = [f'{index}']
+        for column in df: 
+            toPrint.append(f'{100 * df[column][index]:05.2f}%')
+        t.add_row(toPrint)
     
     arithmeticMeans = [f'{100 * x:05.2f}%' for x in df.mean(axis=0).tolist()]
     arithmeticMeans.insert(0, 'Arithmetic Mean')
@@ -176,13 +87,18 @@ if __name__ == '__main__':
     
     print(t)
     
+    
+def getFrontierPortfolios(df, perturbReturns = False):
     covariance = np.asmatrix(df.cov())
     returns = np.asmatrix([(stats.gmean(df[x] + 1) - 1) for x in df])
-    
-    minimumReturns = [0.06]
-    for i in range(20):
-        minimumReturns.append(round(minimumReturns[len(minimumReturns) - 1] + 0.005, 3))
+    if perturbReturns:
+        randomMatrix = np.random.randint(low=95, high=105, size = returns.size)
+        returns = 0.01 * np.multiply(returns, randomMatrix)
         
+    minimumReturns = [0.07]
+    for i in range(10):
+        minimumReturns.append(round(minimumReturns[len(minimumReturns) - 1] + 0.01, 3))
+    
     portfolioSize = returns.size
     P = opt.matrix(covariance)
     q = opt.matrix(np.zeros((portfolioSize, 1)))
@@ -205,35 +121,67 @@ if __name__ == '__main__':
         optimalPortfoliosExplodedWeights.append(newRow)
         
     columns = ['ExpectedReturn', 'Variance']
-    columns.extend([x[0] for x in yearlyRateOfReturns])
-    optimalPortfoliosDf = pd.DataFrame(data = optimalPortfoliosExplodedWeights, 
-                                       columns = columns)
-    optimalPortfoliosDf = optimalPortfoliosDf.set_index('Variance')
+    columns.extend([x for x in stockUniverse])
+    optimalPortfoliosDf = pd.DataFrame(data = optimalPortfoliosExplodedWeights, columns = columns)
+    optimalPortfoliosDf = optimalPortfoliosDf.set_index('Variance')   
     
-    print(optimalPortfoliosDf)
-    
-    optimalPortfoliosDf.plot(y='ExpectedReturn', legend=None, color='#333333')   
-    plt.plot(optimalPortfoliosDf.index, optimalPortfoliosDf['ExpectedReturn'], 'o', markersize = 5, color='g')
+    return optimalPortfoliosDf
+
+def plotFrontierPortfolios(frontierPortfolios):
+    frontierPortfolios.plot(y='ExpectedReturn', legend=None, color='#333333')   
+    plt.plot(frontierPortfolios.index, frontierPortfolios['ExpectedReturn'], 'o', markersize = 5, color='g')
     plt.title(f'Volatility versus Expected Return \nof portfolios along the efficient frontier')
     plt.ylabel('Expected Return (%)')
     plt.xlabel('Standard Deviation (%)')
-    plt.ylim(min(optimalPortfoliosDf['ExpectedReturn']), max(optimalPortfoliosDf['ExpectedReturn']) + 1)
+    plt.ylim(min(frontierPortfolios['ExpectedReturn']), max(frontierPortfolios['ExpectedReturn']) + 1)
     plt.show()
-
-    headers = optimalPortfoliosDf.columns.values.tolist()
+    
+def printFrontierPortfolios(frontierPortfolios):
+    headers = frontierPortfolios.columns.values.tolist()
     headers.insert(0, 'Variance')
     t = PrettyTable(headers)
-    for index, row in optimalPortfoliosDf.iterrows():
+    for index, row in frontierPortfolios.iterrows():
         toPrint = [f'{index:05.2f}%']
-        for column in optimalPortfoliosDf: 
-            toPrint.append(f'{optimalPortfoliosDf[column][index]:05.2f}%')
+        for column in frontierPortfolios: 
+            toPrint.append(f'{frontierPortfolios[column][index]:05.2f}%')
         t.add_row(toPrint)
+    
+    meanWeights = [f'{x:05.2f}%' for x in frontierPortfolios.loc[:, frontierPortfolios.columns != 'ExpectedReturn'].mean(axis=0).values.tolist()]
+    meanWeights.insert(0, 'Mean')
+    meanWeights.insert(0, '')
+    t.add_row(meanWeights)
+    
+    sdWeights = [f'{x:05.2f}%' for x in frontierPortfolios.loc[:, frontierPortfolios.columns != 'ExpectedReturn'].std(axis=0).values.tolist()]
+    sdWeights.insert(0, 'SD')
+    sdWeights.insert(0, '')
+    t.add_row(sdWeights)
     print(t)
+
+if __name__ == '__main__':
+    plotAdjustedClose(stockUniverse[0], 'JP Morgan')
+    plotAdjustedClose(stockUniverse[1], 'Johnson & Johnson')
+    plotAdjustedClose(stockUniverse[2], 'Exxon Mobile Corporation', p3 = 7, p4 = 10, p5 = 312, p6 = 6, p8 = 7)
+    plotAdjustedClose(stockUniverse[3], 'Visa Inc.', p4 = 18)
+    plotAdjustedClose(stockUniverse[4], 'Bank of America Corporation', p3 = 1, p4 = 7, p6 = 5, p8 = 2)
+    plotAdjustedClose(stockUniverse[5], 'Walmart Inc.', p4 = 18)
+    plotAdjustedClose(stockUniverse[6], 'Wells Fargo & Company', p4 = 18)
+    plotAdjustedClose(stockUniverse[7], 'UnitedHealth Group Incorporated', p4 = 27, p6 = 15, p8 = 15)
+    plotAdjustedClose(stockUniverse[8], 'Pfizer, Inc.', p3 = 1.5, p4 = 5, p6 = 2.5, p8 = 2.5)
+    plotAdjustedClose(stockUniverse[9], 'Mastercard Incorporated', p4 = 22, p6 = 10, p8 = 10)
+       
+    plotTotalReturns()
+    df = getYearlyRateOfReturns()
+    printYearlyReturnsTable(df)
     
+    frontierPortfolios = getFrontierPortfolios(df)
+    printFrontierPortfolios(frontierPortfolios)
+    plotFrontierPortfolios(frontierPortfolios)
     
-    
-    
-    
-    
+    perturbations = []
+    frontierPortfolios = getFrontierPortfolios(df, True)
+    frontierPortfolios = getFrontierPortfolios(df, True)
+    frontierPortfolios = getFrontierPortfolios(df, True)
+
+  
     
     
