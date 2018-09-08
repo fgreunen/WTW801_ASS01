@@ -3,11 +3,7 @@ from Shared import Prices, Universe
 import numpy as np
 import cvxopt as opt
 from cvxopt import solvers
-import statistics
 import pandas as pd
-
-# https://blog.quantopian.com/markowitz-portfolio-optimization-2/
-# http://dacatay.com/data-science/portfolio-optimization-python/
 
 class MPT:
     __USE_PREDEFINED_UNIVERSE_LIST = True
@@ -126,12 +122,11 @@ if __name__ == '__main__':
     
     optimalPortfolios = mpt.getFrontierPortfolios(medianMinimumReturn)
     optimalPortfoliosExpectedReturn = optimalPortfolios[0]
-    optimalPortfoliosExpectedVolatilities = optimalPortfolios[1]
+    optimalPortfoliosExpectedVsolatilities = optimalPortfolios[1]
     optimalPortfoliosWeights = opt.matrix(optimalPortfolios[2])
     
     allocations = [optimalPortfoliosWeights]
-
-    for i in range(80):  
+    for i in range(5):  
         mpt.perturbReturns()
         optimalPortfolios = mpt.getFrontierPortfolios(medianMinimumReturn)
         allocations.append(opt.matrix(optimalPortfolios[2]))
@@ -150,19 +145,16 @@ if __name__ == '__main__':
         plt.hist(stockPoints)
         plt.show()
     
-#    print(toplot.groupby(['Stock']).mean())
-#    print(toplot.groupby(['Stock']).agg(np.std))
-    
-#    cal = mpt.getCapitalAllocationLine(optimalPortfoliosExpectedReturn, optimalPortfoliosExpectedVolatilities)
-#    plt.plot(randomPortfoliosExpectedVolatilities, randomPortfoliosExpectedReturn, 'o', markersize = 3)
-#    plt.plot(optimalPortfoliosExpectedVolatilities, optimalPortfoliosExpectedReturn, 'y-o', color='orange', markersize=5, label='Efficient Frontier')
-##    plt.plot([0, max(optimalPortfoliosExpectedVolatilities)],[mpt.RISK_FREE_RATE, cal[0] * max(optimalPortfoliosExpectedVolatilities) + mpt.RISK_FREE_RATE],'k-', label='Capital Allocation Line')
-##    plt.plot([optimalPortfoliosExpectedVolatilities[cal[1]]], [optimalPortfoliosExpectedReturn[cal[1]]], color='green', markersize=10, label='Optimal Portfolio')
-##    plt.plot([0], [mpt.RISK_FREE_RATE], color='green', markersize=10)
-#    plt.xlabel('Expected Portfolio Volatility (Standard deviation of returns, %)')
-#    plt.ylabel('Expected Portfolio Annual Return (%)')
-#    plt.title('Mean and standard deviation of returns portfolios')
-##    plt.axhline(y=mpt.getExpectedReturns().mean(), color='r', linestyle='-')
-##    plt.xlim(0, max(optimalPortfoliosExpectedVolatilities) + 5)
-##    plt.ylim(mpt.RISK_FREE_RATE - 1, mpt.getMaxReturn())
-#    plt.show()
+    cal = mpt.getCapitalAllocationLine(optimalPortfoliosExpectedReturn, optimalPortfoliosExpectedVolatilities)
+    plt.plot(randomPortfoliosExpectedVolatilities, randomPortfoliosExpectedReturn, 'o', markersize = 3)
+    plt.plot(optimalPortfoliosExpectedVolatilities, optimalPortfoliosExpectedReturn, 'y-o', color='orange', markersize=5, label='Efficient Frontier')
+#    plt.plot([0, max(optimalPortfoliosExpectedVolatilities)],[mpt.RISK_FREE_RATE, cal[0] * max(optimalPortfoliosExpectedVolatilities) + mpt.RISK_FREE_RATE],'k-', label='Capital Allocation Line')
+#    plt.plot([optimalPortfoliosExpectedVolatilities[cal[1]]], [optimalPortfoliosExpectedReturn[cal[1]]], color='green', markersize=10, label='Optimal Portfolio')
+#    plt.plot([0], [mpt.RISK_FREE_RATE], color='green', markersize=10)
+    plt.xlabel('Expected Portfolio Volatility (Standard deviation of returns, %)')
+    plt.ylabel('Expected Portfolio Annual Return (%)')
+    plt.title('Mean and standard deviation of returns portfolios')
+#    plt.axhline(y=mpt.getExpectedReturns().mean(), color='r', linestyle='-')
+#    plt.xlim(0, max(optimalPortfoliosExpectedVolatilities) + 5)
+#    plt.ylim(mpt.RISK_FREE_RATE - 1, mpt.getMaxReturn())
+    plt.show()

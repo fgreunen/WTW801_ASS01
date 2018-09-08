@@ -27,6 +27,17 @@ class Prices:
 
         # return self.data.tail(int(self.TRADING_DAYS_PER_YEAR * 5)).pct_change_1D
     
+    def getYearlyRateOfReturns(self):
+        startPrice = self.getPrices()['adj_close'][0]
+        yearlyPrices = self.getPricesResampledYearly()
+        rateOfReturns = []
+        for i in range(len(yearlyPrices.index)):
+            endPrice = yearlyPrices['adj_close'][i]
+            if i > 0:
+                startPrice = yearlyPrices['adj_close'][i-1]
+            rateOfReturns.append(((endPrice - startPrice) / startPrice, yearlyPrices.index[i].year))
+        return rateOfReturns
+
     def getPricesResampledMonthly(self):
         return self.data.resample('M').agg(lambda x: x[-1])
 
